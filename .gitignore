@@ -18,4 +18,5 @@ pnpm-lock.yaml
 .vscode-test/**/*
 .vscode-test/**/*
 
-
+login.json
+varification.json
