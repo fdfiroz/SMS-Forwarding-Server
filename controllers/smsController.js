@@ -17,7 +17,7 @@ exports.storeSms = async (req, res) => {
         message: 'Phone number not registered'
       });
     }
-i
+
     // Store only the content
     const result = await redisClient.set(
       phonenumber,
