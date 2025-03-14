@@ -18,12 +18,17 @@ exports.storeSms = async (req, res) => {
       });
     }
 
+    // Extract OTP from content
+    const content = messageData.content;
+    const otpMatch = content.match(/(\d+)\s+is\s+your/i);
+    const otp = otpMatch ? otpMatch[1] : null;
+
     // Store only the content
     const result = await redisClient.set(
       phonenumber,
-      messageData.content, // Only store the content
+      messageData.content,
       'EX',
-      600 // 10 minutes expiration
+      600
     );
 
     if (!result) {
@@ -32,7 +37,10 @@ exports.storeSms = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      data: { content: messageData.content }
+      data: { 
+        content: messageData.content,
+        otp: otp
+      }
     });
   } catch (error) {
     console.error('SMS storage error:', error);
@@ -56,9 +64,16 @@ exports.getSms = async (req, res) => {
       });
     }
 
+    // Extract OTP from content
+    const otpMatch = content.match(/(\d+)\s+is\s+your/i);
+    const otp = otpMatch ? otpMatch[1] : null;
+
     return res.status(200).json({
       success: true,
-      data: { content }
+      data: { 
+        content,
+        otp: otp
+      }
     });
   } catch (error) {
     console.error('SMS retrieval error:', error);
