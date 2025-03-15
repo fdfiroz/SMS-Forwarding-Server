@@ -3,6 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 const path = require('path');
+const cors = require('cors');
 const connectDB = require('./config/db').default;
 const redisClient = require('./config/redis');
 const smsRoutes = require('./routes/smsRoutes');
@@ -20,6 +21,9 @@ const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
   
   
+// Enable CORS for all origins
+app.use(cors());
+
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
