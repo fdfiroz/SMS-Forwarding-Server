@@ -23,15 +23,13 @@ exports.storeSms = async (req, res) => {
     const otpMatch = content.match(/(\d+)\s+is\s+your/i);
     const otp = otpMatch ? otpMatch[1] : null;
 
-    // Store only the content
-    const result = await redisClient.set(
-      phonenumber,
-      messageData.content,
-      'EX',
-      600
-    );
-
-    if (!result) {
+    // Store content with TTL using SETEX (atomic operation)
+    try {
+      await redisClient.setEx(phonenumber, 600, messageData.content);
+      const ttl = await redisClient.ttl(phonenumber);
+      console.log(`Set TTL for ${phonenumber}: ${ttl} seconds`);
+    } catch (redisError) {
+      console.error('Redis operation failed:', redisError);
       throw new Error('Failed to store message in Redis');
     }
 
@@ -55,12 +53,15 @@ exports.getSms = async (req, res) => {
   const { phonenumber } = req.params;
 
   try {
+    // Get both content and TTL
     const content = await redisClient.get(phonenumber);
+    const ttl = await redisClient.ttl(phonenumber);
+    console.log(`TTL for ${phonenumber}: ${ttl} seconds`);
     
-    if (!content) {
+    if (!content || ttl <= 0) {
       return res.status(404).json({
         success: false,
-        message: 'No SMS found'
+        message: 'No SMS found or message has expired'
       });
     }
 
