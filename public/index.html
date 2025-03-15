@@ -69,6 +69,26 @@
             color: #3c763d;
             border: 1px solid #d6e9c6;
         }
+        .endpoint-container {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: none;
+        }
+        .endpoint-text {
+            font-family: monospace;
+            word-break: break-all;
+        }
+        .copy-btn {
+            background-color: #007bff;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+        .copy-btn:hover {
+            background-color: #0056b3;
+        }
         .error {
             background-color: #f2dede;
             color: #a94442;
@@ -92,6 +112,10 @@
             <button type="submit" class="add-btn">Add Phone Number</button>
         </form>
         <div id="addSuccessMessage" class="message success">Phone number added successfully!</div>
+        <div id="endpointContainer" class="endpoint-container">
+            <div class="endpoint-text" id="endpointText"></div>
+            <button class="copy-btn" onclick="copyEndpoint()">Copy Endpoint</button>
+        </div>
         <div id="addErrorMessage" class="message error"></div>
     </div>
 
@@ -137,6 +161,11 @@
                     successMessage.style.display = 'block';
                     errorMessage.style.display = 'none';
                     document.getElementById('phoneForm').reset();
+                    const endpointContainer = document.getElementById('endpointContainer');
+                    const endpointText = document.getElementById('endpointText');
+                    const endpoint = `/api/sms/${phoneNumber}`;
+                    endpointText.textContent = endpoint;
+                    endpointContainer.style.display = 'block';
                 } else {
                     errorMessage.textContent = data.message || 'Failed to add phone number';
                     errorMessage.style.display = 'block';
@@ -148,6 +177,18 @@
                 successMessage.style.display = 'none';
             }
         });
+
+        function copyEndpoint() {
+            const endpointText = document.getElementById('endpointText').textContent;
+            navigator.clipboard.writeText(endpointText).then(() => {
+                const copyBtn = document.querySelector('.copy-btn');
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = 'Copied!';
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                }, 2000);
+            });
+        }
 
         document.getElementById('deleteForm').addEventListener('submit', async (e) => {
             e.preventDefault();
